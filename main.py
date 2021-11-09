@@ -78,7 +78,8 @@ def eval(model, iterator, f, device):
 
             # This includes the [SEP] in between the 2 sentences
             for w, t, p in zip(words.split()[1:-1], tags.split()[1:-1], preds[1:-1]):
-                fout.write(f"{w} {t} {p}\n")
+                if t != "[SEP]":
+                    fout.write(f"{w} {t} {p}\n")
             fout.write("\n")
 
     ## calc metric
