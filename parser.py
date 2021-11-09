@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
             assert len(turn["agent"]["transcript"]) == len(turn["agent"]["label"])
             for at, al in zip(turn["agent"]["transcript"], turn["agent"]["label"]):
-                if al == "B" or al == "O":
+                if al == "B" or al == "I":
                     al = al + post
                 if at.strip() != "" and al.strip() != "":
                     test_result.write("{} {}\n".format(at, al))

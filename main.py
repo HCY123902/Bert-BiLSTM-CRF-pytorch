@@ -162,7 +162,7 @@ if __name__=="__main__":
     parser.add_argument("--n_epochs", type=int, default=30)
     parser.add_argument("--finetuning", dest="finetuning", action="store_true")
     parser.add_argument("--top_rnns", dest="top_rnns", action="store_true")
-    parser.add_argument("--logdir", type=str, default="checkpoints/01")
+    parser.add_argument("--logdir", type=str, default="checkpoints/02")
 
     # Adjusted
     # parser.add_argument("--trainset", type=str, default="processed/processed_training_bio.txt")
