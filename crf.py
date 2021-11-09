@@ -31,7 +31,7 @@ def log_sum_exp_batch(log_Tensor, axis=-1): # shape (batch_size,n,m)
         torch.log(torch.exp(log_Tensor-torch.max(log_Tensor, axis)[0].view(log_Tensor.shape[0],-1,1)).sum(axis))
 
 class Bert_BiLSTM_CRF(nn.Module):
-    def __init__(self, tag_to_ix, hidden_dim=768):
+    def __init__(self, tag_to_ix, gradient=1, hidden_dim=768):
         super(Bert_BiLSTM_CRF, self).__init__()
         self.tag_to_ix = tag_to_ix
         self.tagset_size = len(tag_to_ix)
@@ -48,6 +48,11 @@ class Bert_BiLSTM_CRF(nn.Module):
         # Adjusted
         # self.bert = BertModel.from_pretrained('/root/workspace/qa_project/chinese_L-12_H-768_A-12')
         self.bert = BertModel.from_pretrained('bert-base-uncased')
+
+        # Added
+        if gradient != 1:
+            for param in self.bert.bert.parameters():
+                param.requires_grad = False
 
         # self.bert.eval()  # 知用来取bert embedding
         

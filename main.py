@@ -173,12 +173,13 @@ if __name__=="__main__":
     parser.add_argument("--evaluateset", type=str, default="raw/processed_test.txt")
 
     parser.add_argument("--evaluate_epoch", type=int, default=0)
+    parser.add_argument("--gradient", type=int, default=1)
 
     hp = parser.parse_args()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    model = Bert_BiLSTM_CRF(tag2idx).cuda()
+    model = Bert_BiLSTM_CRF(tag2idx, gradient=hp.gradient).cuda()
     print('Initial model Done')
     # model = nn.DataParallel(model)
 
