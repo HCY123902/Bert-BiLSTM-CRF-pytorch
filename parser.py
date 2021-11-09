@@ -86,5 +86,5 @@ if __name__ == '__main__':
                     al = al + post
                 if at.strip() != "" and al.strip() != "":
                     test_result.write("{} {}\n".format(at, al))
-            train_result.write("\n".format(at, al))
+            test_result.write("\n".format(at, al))
 
