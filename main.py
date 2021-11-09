@@ -170,8 +170,9 @@ if __name__=="__main__":
 
     parser.add_argument("--trainset", type=str, default="raw/processed_training_bio.txt")
     parser.add_argument("--validset", type=str, default="raw/processed_dev_bio.txt")
+    parser.add_argument("--evaluateset", type=str, default="raw/processed_test.txt")
 
-    parser.add_argument("--evaludate_epoch", type=int, default=0)
+    parser.add_argument("--evaluate_epoch", type=int, default=0)
 
     hp = parser.parse_args()
 
@@ -182,7 +183,12 @@ if __name__=="__main__":
     # model = nn.DataParallel(model)
 
     train_dataset = NerDataset(hp.trainset)
-    eval_dataset = NerDataset(hp.validset)
+
+    # Adjusted
+    if hp.evaluate_epoch > 0:
+        eval_dataset = NerDataset(hp.evaluateset)
+    else:
+        eval_dataset = NerDataset(hp.validset)
     print('Load Data Done')
 
     train_iter = data.DataLoader(dataset=train_dataset,
