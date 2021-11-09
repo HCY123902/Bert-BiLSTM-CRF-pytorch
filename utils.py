@@ -140,6 +140,11 @@ class NerDataset(Dataset):
         assert len(words)==len(tags), f"len(words)={len(words)}, len(tags)={len(tags)}, words={words}, tags={tags}"
         for w, t in zip(words, tags):
             tokens = tokenizer.tokenize(w) if w not in ("[CLS]", "[SEP]") else [w]
+
+            # The set contains \uf44d character
+            if len(tokens) == 0:
+                tokens = ['UNK']
+                
             xx = tokenizer.convert_tokens_to_ids(tokens)
             # assert len(tokens) == len(xx), f"len(tokens)={len(tokens)}, len(xx)={len(xx)}"
 
