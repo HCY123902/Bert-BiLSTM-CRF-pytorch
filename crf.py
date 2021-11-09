@@ -51,8 +51,9 @@ class Bert_BiLSTM_CRF(nn.Module):
 
         # Added
         if gradient != 1:
-            for param in self.bert.bert.parameters():
-                param.requires_grad = False
+            for name, param in self.bert.named_parameters():
+                if 'classifier' not in name: # classifier layer
+                    param.requires_grad = False
 
         # self.bert.eval()  # 知用来取bert embedding
         
