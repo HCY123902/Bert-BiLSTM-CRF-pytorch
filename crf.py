@@ -44,7 +44,11 @@ class Bert_BiLSTM_CRF(nn.Module):
         self.start_label_id = self.tag_to_ix['[CLS]']
         self.end_label_id = self.tag_to_ix['[SEP]']
         self.fc = nn.Linear(hidden_dim, self.tagset_size)
-        self.bert = BertModel.from_pretrained('/root/workspace/qa_project/chinese_L-12_H-768_A-12')
+
+        # Adjusted
+        # self.bert = BertModel.from_pretrained('/root/workspace/qa_project/chinese_L-12_H-768_A-12')
+        self.bert = BertModel.from_pretrained('bert-base-uncased')
+
         # self.bert.eval()  # 知用来取bert embedding
         
         self.transitions.data[self.start_label_id, :] = -10000

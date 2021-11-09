@@ -19,45 +19,80 @@ from pytorch_pretrained_bert import BertTokenizer
 
 logger = logging.getLogger(__name__)
 
-bert_model = '/root/workspace/qa_project/chinese_L-12_H-768_A-12'
+bert_model = 'bert-base-cased'
 tokenizer = BertTokenizer.from_pretrained(bert_model)
 # VOCAB = ('<PAD>', 'O', 'I-LOC', 'B-PER', 'I-PER', 'I-ORG', 'B-LOC', 'B-ORG')
-VOCAB = ('<PAD>', '[CLS]', '[SEP]', 'O', 'B-INF', 'I-INF', 'B-PAT', 'I-PAT', 'B-OPS', 
-        'I-OPS', 'B-DSE', 'I-DSE', 'B-DRG', 'I-DRG', 'B-LAB', 'I-LAB')
+
+# Adjusted
+# VOCAB = ('<PAD>', '[CLS]', '[SEP]', 'O', 'B-INF', 'I-INF', 'B-PAT', 'I-PAT', 'B-OPS', 
+#         'I-OPS', 'B-DSE', 'I-DSE', 'B-DRG', 'I-DRG', 'B-LAB', 'I-LAB')
+
+VOCAB = ('<PAD>', '[CLS]', '[SEP]', 'O', 'B-DIA', 'I-DIA')
+
 tag2idx = {tag: idx for idx, tag in enumerate(VOCAB)}
 idx2tag = {idx: tag for idx, tag in enumerate(VOCAB)}
 MAX_LEN = 256 - 2
 
+# Added
+divider = '==='
 
 class NerDataset(Dataset):
     def __init__(self, f_path):
         with open(f_path, 'r', encoding='utf-8') as fr:
+            # Adjusted
+            # entries = fr.read().strip().split('\n\n')
             entries = fr.read().strip().split('\n\n')
+
         sents, tags_li = [], [] # list of lists
         for entry in entries:
-            words = [line.split()[0] for line in entry.splitlines()]
-            tags = ([line.split()[-1] for line in entry.splitlines()])
-            if len(words) > MAX_LEN:
-                # 先对句号分段
-                word, tag = [], []
-                for char, t in zip(words, tags):
+            lines = entry.splitlines()
+            i = lines.index(divider)
+
+            # Adjusted
+            # words = [line.split()[0] for line in entry.splitlines()]
+            # tags = ([line.split()[-1] for line in entry.splitlines()])
+
+            words_user = [line.split()[0] for line in lines[:i]]
+            words_agent = [line.split()[0] for line in lines[i+1:]]
+            tags_user = ([line.split()[-1] for line in lines[:i]])
+            tags_agent = ([line.split()[-1] for line in lines[i+1:]])
+
+            # Adjusted
+            
+            # if len(words) > MAX_LEN:
+            #     # 先对句号分段
+            #     word, tag = [], []
+            #     for char, t in zip(words, tags):
                     
-                    if char != '。':
-                        if char != '\ue236':   # 测试集中有这个字符
-                            word.append(char)
-                            tag.append(t)
-                    else:
-                        sents.append(["[CLS]"] + word[:MAX_LEN] + ["[SEP]"])
-                        tags_li.append(['[CLS]'] + tag[:MAX_LEN] + ['[SEP]'])
-                        word, tag = [], []            
-                # 最后的末尾
-                if len(word):
-                    sents.append(["[CLS]"] + word[:MAX_LEN] + ["[SEP]"])
-                    tags_li.append(['[CLS]'] + tag[:MAX_LEN] + ['[SEP]'])
-                    word, tag = [], []
+            #         if char != '。':
+            #             if char != '\ue236':   # 测试集中有这个字符
+            #                 word.append(char)
+            #                 tag.append(t)
+            #         else:
+            #             sents.append(["[CLS]"] + word[:MAX_LEN] + ["[SEP]"])
+            #             tags_li.append(['[CLS]'] + tag[:MAX_LEN] + ['[SEP]'])
+            #             word, tag = [], []            
+            #     # 最后的末尾
+            #     if len(word):
+            #         sents.append(["[CLS]"] + word[:MAX_LEN] + ["[SEP]"])
+            #         tags_li.append(['[CLS]'] + tag[:MAX_LEN] + ['[SEP]'])
+            #         word, tag = [], []
+
+            # else:
+            #     sents.append(["[CLS]"] + words[:MAX_LEN] + ["[SEP]"])
+            #     tags_li.append(['[CLS]'] + tags[:MAX_LEN] + ['[SEP]'])
+
+
+            if len(words_user) + len(words_agent) > MAX_LEN:
+                print("length exceeds {}, where user length is {} and agent length is {}".format(MAX_LEN, len(words_user), len(words_agent)))
+                local_max_len = min(len(words_user), words_agent)
+                sents.append(["[CLS]"] + words_user[:local_max_len] + ["[SEP]"] + words_agent[:local_max_len] + ["[SEP]"])
+                tags_li.append(['[CLS]'] + tags_user[:local_max_len] + ['[SEP]'] + tags_agent[:local_max_len] + ["[SEP]"])
             else:
-                sents.append(["[CLS]"] + words[:MAX_LEN] + ["[SEP]"])
-                tags_li.append(['[CLS]'] + tags[:MAX_LEN] + ['[SEP]'])
+                sents.append(["[CLS]"] + words_user + ["[SEP]"] + words_agent + ["[SEP]"])
+                tags_li.append(['[CLS]'] + tags_user + ['[SEP]'] + tags_agent + ["[SEP]"])
+
+
         self.sents, self.tags_li = sents, tags_li
                 
 
@@ -65,12 +100,30 @@ class NerDataset(Dataset):
         words, tags = self.sents[idx], self.tags_li[idx]
         x, y = [], []
         is_heads = []
+
+        # Adjusted
+
+        # for w, t in zip(words, tags):
+        #     tokens = tokenizer.tokenize(w) if w not in ("[CLS]", "[SEP]") else [w]
+        #     xx = tokenizer.convert_tokens_to_ids(tokens)
+        #     # assert len(tokens) == len(xx), f"len(tokens)={len(tokens)}, len(xx)={len(xx)}"
+
+        #     # 中文没有英文wordpiece后分成几块的情况
+        #     is_head = [1] + [0]*(len(tokens) - 1)
+        #     t = [t] + ['<PAD>'] * (len(tokens) - 1)
+        #     yy = [tag2idx[each] for each in t]  # (T,)
+
+        #     x.extend(xx)
+        #     is_heads.extend(is_head)
+        #     y.extend(yy)
+
         for w, t in zip(words, tags):
-            tokens = tokenizer.tokenize(w) if w not in ("[CLS]", "[SEP]") else [w]
+            # Avoid tokenizing again sine ##ding will be split into # 
+            # tokens = tokenizer.tokenize(w) if w not in ("[CLS]", "[SEP]") else [w]
+            tokens = [w]
             xx = tokenizer.convert_tokens_to_ids(tokens)
             # assert len(tokens) == len(xx), f"len(tokens)={len(tokens)}, len(xx)={len(xx)}"
 
-            # 中文没有英文wordpiece后分成几块的情况
             is_head = [1] + [0]*(len(tokens) - 1)
             t = [t] + ['<PAD>'] * (len(tokens) - 1)
             yy = [tag2idx[each] for each in t]  # (T,)
@@ -78,6 +131,9 @@ class NerDataset(Dataset):
             x.extend(xx)
             is_heads.extend(is_head)
             y.extend(yy)
+
+        
+
         assert len(x)==len(y)==len(is_heads), f"len(x)={len(x)}, len(y)={len(y)}, len(is_heads)={len(is_heads)}"
 
         # seqlen
