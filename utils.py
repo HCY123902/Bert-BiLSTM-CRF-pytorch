@@ -143,7 +143,7 @@ class NerDataset(Dataset):
 
             # The set contains \uf44d character
             if len(tokens) == 0:
-                tokens = ['UNK']
+                tokens = ['[UNK]']
                 
             xx = tokenizer.convert_tokens_to_ids(tokens)
             # assert len(tokens) == len(xx), f"len(tokens)={len(tokens)}, len(xx)={len(xx)}"
