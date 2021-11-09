@@ -135,6 +135,9 @@ class NerDataset(Dataset):
         #     y.extend(yy)
 
         # This is for untokeinzed set
+
+
+        assert len(words)==len(tags), f"len(words)={len(words)}, len(tags)={len(tags)}, words={words}, tags={tags}"
         for w, t in zip(words, tags):
             tokens = tokenizer.tokenize(w) if w not in ("[CLS]", "[SEP]") else [w]
             xx = tokenizer.convert_tokens_to_ids(tokens)
