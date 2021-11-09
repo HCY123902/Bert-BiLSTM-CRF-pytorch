@@ -30,13 +30,13 @@ if __name__ == '__main__':
     for dialog in train_json:
         for turn in dialog["dialogue"]:
             for ut, ul, in zip(turn["user"]["transcript"], turn["user"]["label"]):
-                if ul == "B" or ul == "O":
+                if ul == "B" or ul == "I":
                     ul = ul + post
                 train_result.write("{} {}\n".format(ut, ul))
 
 
             for at, al in zip(turn["agent"]["transcript"], turn["agent"]["label"]):
-                if al == "B" or al == "O":
+                if al == "B" or al == "I":
                     al = al + post
                 train_result.write("{} {}\n".format(at, al))
             train_result.write("\n".format(at, al))
@@ -46,13 +46,13 @@ if __name__ == '__main__':
     for dialog in dev_json:
         for turn in dialog["dialogue"]:
             for ut, ul, in zip(turn["user"]["transcript"], turn["user"]["label"]):
-                if ul == "B" or ul == "O":
+                if ul == "B" or ul == "I":
                     ul = ul + post
                 dev_result.write("{} {}\n".format(ut, ul))
 
 
             for at, al in zip(turn["agent"]["transcript"], turn["agent"]["label"]):
-                if al == "B" or al == "O":
+                if al == "B" or al == "I":
                     al = al + post
                 dev_result.write("{} {}\n".format(at, al))
             dev_result.write("\n".format(at, al))
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     for dialog in test_json:
         for turn in dialog["dialogue"]:
             for ut, ul, in zip(turn["user"]["transcript"], turn["user"]["label"]):
-                if ul == "B" or ul == "O":
+                if ul == "B" or ul == "I":
                     ul = ul + post
                 test_result.write("{} {}\n".format(ut, ul))
 
