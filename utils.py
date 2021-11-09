@@ -152,7 +152,7 @@ class NerDataset(Dataset):
             y.extend(yy)
         
 
-        assert len(x)==len(y)==len(is_heads), f"len(x)={len(x)}, len(y)={len(y)}, len(is_heads)={len(is_heads)}"
+        assert len(x)==len(y)==len(is_heads), f"len(x)={len(x)}, len(y)={len(y)}, len(is_heads)={len(is_heads)}, words={words}, tags={tags}"
 
         # seqlen
         seqlen = len(y)
