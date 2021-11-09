@@ -27,7 +27,7 @@ tokenizer = BertTokenizer.from_pretrained(bert_model)
 # VOCAB = ('<PAD>', '[CLS]', '[SEP]', 'O', 'B-INF', 'I-INF', 'B-PAT', 'I-PAT', 'B-OPS', 
 #         'I-OPS', 'B-DSE', 'I-DSE', 'B-DRG', 'I-DRG', 'B-LAB', 'I-LAB')
 
-VOCAB = ('<PAD>', '[CLS]', '[SEP]', 'O', 'B-DIA', 'I-DIA')
+VOCAB = ('<PAD>', '[CLS]', '[SEP]', 'O', 'B-ns', 'I-ns')
 
 tag2idx = {tag: idx for idx, tag in enumerate(VOCAB)}
 idx2tag = {idx: tag for idx, tag in enumerate(VOCAB)}
@@ -117,10 +117,26 @@ class NerDataset(Dataset):
         #     is_heads.extend(is_head)
         #     y.extend(yy)
 
+
+        # This is for tokenzied set
+        # for w, t in zip(words, tags):
+        #     # Avoid tokenizing again sine ##ding will be split into # 
+        #     # tokens = tokenizer.tokenize(w) if w not in ("[CLS]", "[SEP]") else [w]
+        #     tokens = [w]
+        #     xx = tokenizer.convert_tokens_to_ids(tokens)
+        #     # assert len(tokens) == len(xx), f"len(tokens)={len(tokens)}, len(xx)={len(xx)}"
+
+        #     is_head = [1] + [0]*(len(tokens) - 1)
+        #     t = [t] + ['<PAD>'] * (len(tokens) - 1)
+        #     yy = [tag2idx[each] for each in t]  # (T,)
+
+        #     x.extend(xx)
+        #     is_heads.extend(is_head)
+        #     y.extend(yy)
+
+        # This is for untokeinzed set
         for w, t in zip(words, tags):
-            # Avoid tokenizing again sine ##ding will be split into # 
-            # tokens = tokenizer.tokenize(w) if w not in ("[CLS]", "[SEP]") else [w]
-            tokens = [w]
+            tokens = tokenizer.tokenize(w) if w not in ("[CLS]", "[SEP]") else [w]
             xx = tokenizer.convert_tokens_to_ids(tokens)
             # assert len(tokens) == len(xx), f"len(tokens)={len(tokens)}, len(xx)={len(xx)}"
 
@@ -131,7 +147,6 @@ class NerDataset(Dataset):
             x.extend(xx)
             is_heads.extend(is_head)
             y.extend(yy)
-
         
 
         assert len(x)==len(y)==len(is_heads), f"len(x)={len(x)}, len(y)={len(y)}, len(is_heads)={len(is_heads)}"

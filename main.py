@@ -49,7 +49,7 @@ def train(model, iterator, optimizer, criterion, device):
         if i%10==0: # monitoring
             print(f"step: {i}, loss: {loss.item()}")
 
-def eval(model, iterator, f, device):
+def eval(model, iterator, f, device, epoch):
     model.eval()
 
     Words, Is_heads, Tags, Y, Y_hat = [], [], [], [], []
@@ -68,18 +68,20 @@ def eval(model, iterator, f, device):
             Y_hat.extend(y_hat.cpu().numpy().tolist())
 
     ## gets results and save
-    with open("temp", 'w', encoding='utf-8') as fout:
+    with open("temp_{}".format(epoch), 'w', encoding='utf-8') as fout:
         for words, is_heads, tags, y_hat in zip(Words, Is_heads, Tags, Y_hat):
             y_hat = [hat for head, hat in zip(is_heads, y_hat) if head == 1]
             preds = [idx2tag[hat] for hat in y_hat]
             assert len(preds)==len(words.split())==len(tags.split())
+
+            # This includes the [SEP] in between the 2 sentences
             for w, t, p in zip(words.split()[1:-1], tags.split()[1:-1], preds[1:-1]):
                 fout.write(f"{w} {t} {p}\n")
             fout.write("\n")
 
     ## calc metric
-    y_true =  np.array([tag2idx[line.split()[1]] for line in open("temp", 'r', encoding='utf-8').read().splitlines() if len(line) > 0])
-    y_pred =  np.array([tag2idx[line.split()[2]] for line in open("temp", 'r', encoding='utf-8').read().splitlines() if len(line) > 0])
+    y_true =  np.array([tag2idx[line.split()[1]] for line in open("temp_{}".format(epoch), 'r', encoding='utf-8').read().splitlines() if len(line) > 0])
+    y_pred =  np.array([tag2idx[line.split()[2]] for line in open("temp_{}".format(epoch), 'r', encoding='utf-8').read().splitlines() if len(line) > 0])
 
     num_proposed = len(y_pred[y_pred>1])
     num_correct = (np.logical_and(y_true==y_pred, y_true>1)).astype(np.int).sum()
@@ -115,11 +117,39 @@ def eval(model, iterator, f, device):
         fout.write(f"recall={recall}\n")
         fout.write(f"f1={f1}\n")
 
-    os.remove("temp")
+    # Added
+    #os.remove("temp")
 
     print("precision=%.2f"%precision)
     print("recall=%.2f"%recall)
     print("f1=%.2f"%f1)
+
+    # Added
+    # start_idx = 0
+    # end_idx = 0
+    # test_pred_lines = []
+    # test_true_lines = []
+    # seq_lines = pd.DataFrame(test_outputs["tokens"])
+    # for i,seq in enumerate(seq_lines["tokens"]):
+    #     start_idx = end_idx
+    #     end_idx = start_idx + len(seq)
+    #     adju_pred_line = parse_line(test_y_ns[start_idx:end_idx])
+    #     test_true_line = test_outputs["true_labels"][start_idx:end_idx]
+    #     test_pred_lines.append(adju_pred_line)
+    #     test_true_lines.append(test_true_line)
+    # rose_metric(test_true_lines,test_pred_lines)
+
+    # # Metrics —— Token
+    # test_pred_tokens = parse_token(test_y_ns)
+    # test_true_tokens = parse_token(test_outputs["true_labels"])
+    # token_metric(test_true_tokens,test_pred_tokens)
+
+
+
+
+
+
+
     return precision, recall, f1
 
 if __name__=="__main__":
@@ -166,7 +196,7 @@ if __name__=="__main__":
         print(f"=========eval at epoch={epoch}=========")
         if not os.path.exists(hp.logdir): os.makedirs(hp.logdir)
         fname = os.path.join(hp.logdir, str(epoch))
-        precision, recall, f1 = eval(model, eval_iter, fname, device)
+        precision, recall, f1 = eval(model, eval_iter, fname, device, epoch)
 
         torch.save(model.state_dict(), f"{fname}.pt")
         print(f"weights were saved to {fname}.pt")
