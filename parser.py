@@ -21,9 +21,9 @@ if __name__ == '__main__':
     dev_raw = open('./{}/dev_dials.json'.format(args.raw_list))
     test_raw = open('./{}/test_dials.json'.format(args.raw_list))
 
-    train_result = open('./{}/processed_training_bio.txt'.format(args.raw_list), "w")
-    dev_result = open('./{}/processed_dev_bio.txt'.format(args.raw_list), "w")
-    test_result = open('./{}/processed_test.txt'.format(args.raw_list), "w")
+    train_result = open('./{}/processed_training_bio.txt'.format(args.result), "w")
+    dev_result = open('./{}/processed_dev_bio.txt'.format(args.result), "w")
+    test_result = open('./{}/processed_test.txt'.format(args.result), "w")
 
     train_json = json.load(train_raw)
 
