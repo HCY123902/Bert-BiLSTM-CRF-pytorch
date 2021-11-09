@@ -207,7 +207,7 @@ if __name__=="__main__":
 
     if hp.evaluate_epoch > 0:
         path = "./checkpoints/02/{}.pt".format(hp.evaluate_epoch)
-        model.load_state_dict(torch.load())
+        model.load_state_dict(torch.load(path))
 
         if not os.path.exists(hp.logdir): os.makedirs(hp.logdir)
         fname = os.path.join(hp.logdir, "evaluate")
