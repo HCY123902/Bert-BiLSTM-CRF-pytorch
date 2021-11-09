@@ -12,7 +12,7 @@ from crf import Bert_BiLSTM_CRF
 from utils import NerDataset, pad, VOCAB, tokenizer, tag2idx, idx2tag
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 
 def train(model, iterator, optimizer, criterion, device):
@@ -160,8 +160,14 @@ if __name__=="__main__":
     parser.add_argument("--finetuning", dest="finetuning", action="store_true")
     parser.add_argument("--top_rnns", dest="top_rnns", action="store_true")
     parser.add_argument("--logdir", type=str, default="checkpoints/01")
-    parser.add_argument("--trainset", type=str, default="processed/processed_training_bio.txt")
-    parser.add_argument("--validset", type=str, default="processed/processed_dev_bio.txt")
+
+    # Adjusted
+    # parser.add_argument("--trainset", type=str, default="processed/processed_training_bio.txt")
+    # parser.add_argument("--validset", type=str, default="processed/processed_dev_bio.txt")
+
+    parser.add_argument("--trainset", type=str, default="raw/processed_training_bio.txt")
+    parser.add_argument("--validset", type=str, default="raw/processed_dev_bio.txt")
+
     hp = parser.parse_args()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
