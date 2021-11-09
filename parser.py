@@ -34,6 +34,7 @@ if __name__ == '__main__':
                     ul = ul + post
                 train_result.write("{} {}\n".format(ut, ul))
 
+            train_result.write("===\n".format(ut, ul))
 
             for at, al in zip(turn["agent"]["transcript"], turn["agent"]["label"]):
                 if al == "B" or al == "I":
@@ -50,6 +51,7 @@ if __name__ == '__main__':
                     ul = ul + post
                 dev_result.write("{} {}\n".format(ut, ul))
 
+            dev_result.write("===\n".format(ut, ul))
 
             for at, al in zip(turn["agent"]["transcript"], turn["agent"]["label"]):
                 if al == "B" or al == "I":
@@ -66,6 +68,7 @@ if __name__ == '__main__':
                     ul = ul + post
                 test_result.write("{} {}\n".format(ut, ul))
 
+            test_result.write("===\n".format(ut, ul))
 
             for at, al in zip(turn["agent"]["transcript"], turn["agent"]["label"]):
                 if al == "B" or al == "O":
