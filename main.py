@@ -171,6 +171,8 @@ if __name__=="__main__":
     parser.add_argument("--trainset", type=str, default="raw/processed_training_bio.txt")
     parser.add_argument("--validset", type=str, default="raw/processed_dev_bio.txt")
 
+    parser.add_argument("--evaludate_epoch", type=int, default=0)
+
     hp = parser.parse_args()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -195,18 +197,27 @@ if __name__=="__main__":
                                  collate_fn=pad)
 
     optimizer = optim.Adam(model.parameters(), lr = hp.lr)
-    criterion = nn.CrossEntropyLoss(ignore_index=0) 
+    criterion = nn.CrossEntropyLoss(ignore_index=0)
 
-    print('Start Train...,')
-    for epoch in range(1, hp.n_epochs+1):  # 每个epoch对dev集进行测试
+    if hp.evaluate_epoch > 0:
+        path = "./checkpoints/02/{}.pt".format(hp.evaluate_epoch)
+        model.load_state_dict(torch.load())
 
-        train(model, train_iter, optimizer, criterion, device)
-
-        print(f"=========eval at epoch={epoch}=========")
         if not os.path.exists(hp.logdir): os.makedirs(hp.logdir)
-        fname = os.path.join(hp.logdir, str(epoch))
+        fname = os.path.join(hp.logdir, "evaluate")
         precision, recall, f1 = eval(model, eval_iter, fname, device)
 
-        torch.save(model.state_dict(), f"{fname}.pt")
-        print(f"weights were saved to {fname}.pt")
+    else:
+        print('Start Train...,')
+        for epoch in range(1, hp.n_epochs+1):  # 每个epoch对dev集进行测试
+
+            train(model, train_iter, optimizer, criterion, device)
+
+            print(f"=========eval at epoch={epoch}=========")
+            if not os.path.exists(hp.logdir): os.makedirs(hp.logdir)
+            fname = os.path.join(hp.logdir, str(epoch))
+            precision, recall, f1 = eval(model, eval_iter, fname, device)
+
+            torch.save(model.state_dict(), f"{fname}.pt")
+            print(f"weights were saved to {fname}.pt")
 
