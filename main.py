@@ -24,9 +24,10 @@ def train(model, iterator, optimizer, criterion, device):
 
         x = x.to(device)
         y = y.to(device)
+        mask = mask.to(device)
         _y = y # for monitoring
         optimizer.zero_grad()
-        loss = model.neg_log_likelihood(x, y, mask) # logits: (N, T, VOCAB), y: (N, T)
+        loss = model.neg_log_likelihood(x, y, mask=mask) # logits: (N, T, VOCAB), y: (N, T)
 
         # logits = logits.view(-1, logits.shape[-1]) # (N*T, VOCAB)
         # y = y.view(-1)  # (N*T,)
@@ -65,9 +66,10 @@ def eval(model, iterator, f, device):
             words, x, is_heads, tags, y, seqlens, mask = batch
 
             x = x.to(device)
+            mask = mask.to(device)
             # y = y.to(device)
 
-            _, y_hat = model(x)  # y_hat: (N, T)
+            _, y_hat = model(x, attention_mask=mask)  # y_hat: (N, T)
 
             Words.extend(words)
             Is_heads.extend(is_heads)
