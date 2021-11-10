@@ -240,9 +240,9 @@ def eval(model, iterator, f, device):
     # Added
     #os.remove("temp")
 
-    print("marco_precision=%.5f"%precision)
-    print("marco_recall=%.5f"%recall)
-    print("marco_f1=%.5f"%f1)
+    print("marco_precision=%.5f"%macro_precision)
+    print("marco_recall=%.5f"%macro_recall)
+    print("marco_f1=%.5f"%macro_f1)
 
 
 
