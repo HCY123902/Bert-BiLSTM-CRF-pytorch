@@ -174,9 +174,9 @@ class Bert_BiLSTM_CRF(nn.Module):
         lstm_feats = self.fc(enc)
         return lstm_feats  # [8, 75, 16]
 
-    def forward(self, sentence):  # dont confuse this with _forward_alg above.
+    def forward(self, sentence, mask=None):  # dont confuse this with _forward_alg above.
         # Get the emission scores from the BiLSTM
-        lstm_feats = self._get_lstm_features(sentence)  # [8, 180,768]
+        lstm_feats = self._get_lstm_features(sentence, mask=mask)  # [8, 180,768]
 
         # Find the best path, given the features.
         score, tag_seq = self._viterbi_decode(lstm_feats)

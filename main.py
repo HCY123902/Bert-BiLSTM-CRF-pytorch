@@ -69,7 +69,7 @@ def eval(model, iterator, f, device):
             mask = mask.to(device)
             # y = y.to(device)
 
-            _, y_hat = model(x, attention_mask=mask)  # y_hat: (N, T)
+            _, y_hat = model(x, mask=mask)  # y_hat: (N, T)
 
             Words.extend(words)
             Is_heads.extend(is_heads)
