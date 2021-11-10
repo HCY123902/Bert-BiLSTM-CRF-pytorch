@@ -207,7 +207,7 @@ if __name__=="__main__":
     criterion = nn.CrossEntropyLoss(ignore_index=0)
 
     if hp.evaluate_epoch > 0:
-        path = "./checkpoints/02/{}.pt".format(hp.evaluate_epoch)
+        path = "./{}}/{}.pt".format(hp.logdir, hp.evaluate_epoch)
         model.load_state_dict(torch.load(path))
 
         if not os.path.exists(hp.logdir): os.makedirs(hp.logdir)
