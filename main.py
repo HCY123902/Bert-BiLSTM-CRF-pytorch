@@ -18,12 +18,15 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 def train(model, iterator, optimizer, criterion, device):
     model.train()
     for i, batch in enumerate(iterator):
-        words, x, is_heads, tags, y, seqlens = batch
+        # Adjusted
+        # words, x, is_heads, tags, y, seqlens = batch
+        words, x, is_heads, tags, y, seqlens, mask = batch
+
         x = x.to(device)
         y = y.to(device)
         _y = y # for monitoring
         optimizer.zero_grad()
-        loss = model.neg_log_likelihood(x, y) # logits: (N, T, VOCAB), y: (N, T)
+        loss = model.neg_log_likelihood(x, y, mask) # logits: (N, T, VOCAB), y: (N, T)
 
         # logits = logits.view(-1, logits.shape[-1]) # (N*T, VOCAB)
         # y = y.view(-1)  # (N*T,)
@@ -57,7 +60,10 @@ def eval(model, iterator, f, device):
     Words, Is_heads, Tags, Y, Y_hat = [], [], [], [], []
     with torch.no_grad():
         for i, batch in enumerate(iterator):
-            words, x, is_heads, tags, y, seqlens = batch
+            # Adjusted
+            # words, x, is_heads, tags, y, seqlens = batch
+            words, x, is_heads, tags, y, seqlens, mask = batch
+
             x = x.to(device)
             # y = y.to(device)
 
@@ -111,21 +117,21 @@ def eval(model, iterator, f, device):
         else:
             f1=0
 
-    final = f + ".P%.2f_R%.2f_F%.2f" %(precision, recall, f1)
-    with open(final, 'w', encoding='utf-8') as fout:
-        result = open(path, "r", encoding='utf-8').read()
-        fout.write(f"{result}\n")
+    # final = f + ".P%.2f_R%.2f_F%.2f" %(precision, recall, f1)
+    # with open(final, 'w', encoding='utf-8') as fout:
+    #     result = open(path, "r", encoding='utf-8').read()
+    #     fout.write(f"{result}\n")
 
-        fout.write(f"precision={precision}\n")
-        fout.write(f"recall={recall}\n")
-        fout.write(f"f1={f1}\n")
+    #     fout.write(f"precision={precision}\n")
+    #     fout.write(f"recall={recall}\n")
+    #     fout.write(f"f1={f1}\n")
 
     # Added
     #os.remove("temp")
 
-    print("precision=%.2f"%precision)
-    print("recall=%.2f"%recall)
-    print("f1=%.2f"%f1)
+    print("precision=%.5f"%precision)
+    print("recall=%.5f"%recall)
+    print("f1=%.5f"%f1)
 
     # Added
     # start_idx = 0
@@ -147,7 +153,94 @@ def eval(model, iterator, f, device):
     # test_true_tokens = parse_token(test_outputs["true_labels"])
     # token_metric(test_true_tokens,test_pred_tokens)
 
+    I_num_proposed = len(y_pred[y_pred==5])
+    I_num_correct = (np.logical_and(y_true==y_pred, y_true==5)).astype(np.int).sum()
+    I_num_gold = len(y_true[y_true==5])
 
+    B_num_proposed = len(y_pred[y_pred==4])
+    B_num_correct = (np.logical_and(y_true==y_pred, y_true==4)).astype(np.int).sum()
+    B_num_gold = len(y_true[y_true==4])
+
+    O_num_proposed = len(y_pred[y_pred==3])
+    O_num_correct = (np.logical_and(y_true==y_pred, y_true==3)).astype(np.int).sum()
+    O_num_gold = len(y_true[y_true==3])
+
+    try:
+        I_precision = I_num_correct / I_num_proposed
+    except ZeroDivisionError:
+        I_precision = 1.0
+
+    try:
+        I_recall = I_num_correct / I_num_gold
+    except ZeroDivisionError:
+        I_recall = 1.0
+
+    try:
+        I_f1 = 2*I_precision*I_recall / (I_precision + I_recall)
+    except ZeroDivisionError:
+        if I_precision*I_recall==0:
+            I_f1=1.0
+        else:
+            I_f1=0
+
+    try:
+        B_precision = B_num_correct / B_num_proposed
+    except ZeroDivisionError:
+        B_precision = 1.0
+
+    try:
+        B_recall = B_num_correct / B_num_gold
+    except ZeroDivisionError:
+        B_recall = 1.0
+
+    try:
+        B_f1 = 2*B_precision*B_recall / (B_precision + B_recall)
+    except ZeroDivisionError:
+        if B_precision*B_recall==0:
+            B_f1=1.0
+        else:
+            B_f1=0
+
+    try:
+        O_precision = O_num_correct / O_num_proposed
+    except ZeroDivisionError:
+        O_precision = 1.0
+
+    try:
+        O_recall = O_num_correct / O_num_gold
+    except ZeroDivisionError:
+        O_recall = 1.0
+
+    try:
+        O_f1 = 2*O_precision*O_recall / (O_precision + O_recall)
+    except ZeroDivisionError:
+        if O_precision*O_recall==0:
+            O_f1=1.0
+        else:
+            O_f1=0
+    
+    macro_precision = (I_precision + B_precision + O_precision) / 3
+    macro_recall = (I_recall + B_recall + O_recall) / 3
+    macro_f1 = (I_f1 + B_f1 + O_f1) / 3
+
+    final = f + ".P%.2f_R%.2f_F%.2f" %(precision, recall, f1)
+    with open(final, 'w', encoding='utf-8') as fout:
+        result = open(path, "r", encoding='utf-8').read()
+        fout.write(f"{result}\n")
+
+        fout.write(f"precision={precision}\n")
+        fout.write(f"recall={recall}\n")
+        fout.write(f"f1={f1}\n")
+        fout.write(f"marco_precision={macro_precision}\n")
+        fout.write(f"marco_recall={macro_recall}\n")
+        fout.write(f"macro_f1={macro_f1}\n")
+
+    # Added
+    #os.remove("temp")
+
+    print("marco_precision=%.5f"%precision)
+    print("marco_recall=%.5f"%recall)
+    print("marco_f1=%.5f"%f1)
 
 
 

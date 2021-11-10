@@ -188,5 +188,11 @@ def pad(batch):
 
     f = torch.LongTensor
 
-    return words, f(x), is_heads, tags, f(y), seqlens
+    # Added
+    g = lambda seqlen: [[1] * len(sample[1]) + [0] * (seqlen - len(sample[1])) for sample in batch] # 0: <pad>
+    attention_mask = g(maxlen)
+
+    g = torch.LongTensor
+
+    return words, f(x), is_heads, tags, f(y), seqlens, g(attention_mask)
     

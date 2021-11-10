@@ -109,13 +109,18 @@ class Bert_BiLSTM_CRF(nn.Module):
                     + feats[:, t].gather(-1, label_ids[:, t].view(-1,1)).view(-1,1)
         return score
 
-    def _bert_enc(self, x):
+    def _bert_enc(self, x, mask=None):
         """
         x: [batchsize, sent_len]
         enc: [batch_size, sent_len, 768]
         """
         with torch.no_grad():
-            encoded_layer, _  = self.bert(x)
+            # Adjusted
+            # encoded_layer, _  = self.bert(x)
+            if mask:
+                encoded_layer, _  = self.bert(x, attention_mask=mask)
+            else:
+                encoded_layer, _  = self.bert(x)
             enc = encoded_layer[-1]
         return enc
 
@@ -156,17 +161,17 @@ class Bert_BiLSTM_CRF(nn.Module):
         return max_logLL_allz_allx, path
 
 
-    def neg_log_likelihood(self, sentence, tags):
-        feats = self._get_lstm_features(sentence)  #[batch_size, max_len, 16]
+    def neg_log_likelihood(self, sentence, tags, mask=None):
+        feats = self._get_lstm_features(sentence, mask=mask)  #[batch_size, max_len, 16]
         forward_score = self._forward_alg(feats)
         gold_score = self._score_sentence(feats, tags)
         return torch.mean(forward_score - gold_score)
 
 
-    def _get_lstm_features(self, sentence):
+    def _get_lstm_features(self, sentence, mask=None):
         """sentence is the ids"""
         # self.hidden = self.init_hidden()
-        embeds = self._bert_enc(sentence)  # [8, 75, 768]
+        embeds = self._bert_enc(sentence, mask=mask)  # [8, 75, 768]
         # 过lstm
         enc, _ = self.lstm(embeds)
         lstm_feats = self.fc(enc)
