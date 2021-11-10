@@ -117,10 +117,7 @@ class Bert_BiLSTM_CRF(nn.Module):
         with torch.no_grad():
             # Adjusted
             # encoded_layer, _  = self.bert(x)
-            if mask:
-                encoded_layer, _  = self.bert(x, attention_mask=mask)
-            else:
-                encoded_layer, _  = self.bert(x)
+            encoded_layer, _  = self.bert(x, attention_mask=mask)
             enc = encoded_layer[-1]
         return enc
 
