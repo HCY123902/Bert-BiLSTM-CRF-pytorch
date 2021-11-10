@@ -13,4 +13,4 @@ from collections import namedtuple
 
 class Config(NamedTuple):
     # bert_model = '/root/workspace/pretrained_models/chinese_L-12_H-768_A-12'
-    bert_model = 'bert-base-uncased'
+    bert_model = 'bert-base-cased'

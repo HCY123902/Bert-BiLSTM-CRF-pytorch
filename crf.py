@@ -47,7 +47,7 @@ class Bert_BiLSTM_CRF(nn.Module):
 
         # Adjusted
         # self.bert = BertModel.from_pretrained('/root/workspace/qa_project/chinese_L-12_H-768_A-12')
-        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        self.bert = BertModel.from_pretrained('bert-base-cased')
 
         # Added
         if gradient != 1:
